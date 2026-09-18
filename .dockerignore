@@ -1,0 +1,31 @@
+# .NET
+obj/
+bin/
+*.user
+*.log
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Docker
+dockerfiles/
+*.dockerfile
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+build/
+dist/
+*.egg-info/

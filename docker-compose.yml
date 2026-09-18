@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # .NET API Service
+  chatapp-api:
+    build:
+      context: .
+      dockerfile: dockerfiles/chatapp-api.dockerfile
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ./backend:/backend
+    networks:
+      - chatapp-network
+
+  # Gradio Frontend Service
+  chatapp-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "7860:7860"
+    environment:
+      - API_BASE_URL=http://chatapp-api:5000
+      - SIGNALR_URL=http://chatapp-api:5000/hubs/chat
+    depends_on:
+      - chatapp-api
+    networks:
+      - chatapp-network
+
+networks:
+  chatapp-network:
+    driver: bridge
