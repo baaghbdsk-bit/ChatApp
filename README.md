@@ -1,164 +1,103 @@
-# 📚 ChatApp - Learning Edition
+# ChatApp - Learning Edition
 
-This is a learning-focused chat application to teach:
-- **Backend architecture** (ASP.NET Core with CQRS patterns)
-- **Real-time communication** (SignalR)
-- **Containerization** (Docker)
-- **Orchestration** (Kubernetes)
-- **Frontend frameworks** (Gradio, Angular, Blazor)
+A free learning project for understanding application architecture, Docker, CI/CD,
+and deployment by building a working chat application.
 
-## 🏗️ Architecture
+## Current Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Client Layer                         │
-│  ┌─────────────┐  ┌──────────────┐  ┌────────────────┐ │
-│  │   Gradio    │  │   Angular    │  │    Blazor      │ │
-│  │  (Python)   │  │   (TS/JS)    │  │  (C#/.NET)     │ │
-│  └─────────────┘  └──────────────┘  └────────────────┘ │
-└─────────────────────────────────────────────────────────┘
-                         ↓ HTTP/WebSocket
-┌─────────────────────────────────────────────────────────┐
-│              API Layer (.NET 9.0)                       │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │  Controllers + SignalR Hub + Auth + Validators   │  │
-│  └──────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-                         ↓
-┌─────────────────────────────────────────────────────────┐
-│            Infrastructure Layer                         │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
-│  │  Repositories│  │   Auth       │  │  Caching     │  │
-│  └──────────────┘  └──────────────┘  └──────────────┘  │
-└─────────────────────────────────────────────────────────┘
+```text
+Browser
+  -> Gradio frontend container (Python, port 7860)
+      -> Docker network
+          -> ASP.NET Core API container (port 5000)
+              -> in-memory repositories
 ```
 
-## 🚀 Quick Start (Local Development)
+The current frontend is Gradio for fast experimentation. Angular is planned for
+a later release. Data is currently stored in memory, so it is intentionally lost
+when the backend container is removed or restarted.
 
-### Option 1: Run with Gradio (Simplest for learning)
+## Run With Docker Compose
 
-```bash
-# 1. Install Python dependencies
+From the repository root:
+
+```powershell
+docker compose up --build
+```
+
+Open the frontend at <http://localhost:7860>.
+
+The API is available at <http://localhost:5000> and its health endpoint is:
+
+<http://localhost:5000/health>
+
+To stop the application:
+
+```powershell
+docker compose down
+```
+
+## Run Without Docker
+
+Start the API:
+
+```powershell
+dotnet run --project backend/ChatApp.API/ChatApp.API.csproj
+```
+
+Start the frontend in another terminal:
+
+```powershell
 cd frontend
 pip install -r requirements.txt
-
-# 2. Run the Gradio app
 python app.py
 ```
 
-This starts Gradio on `http://localhost:7860`.
+## Repository Structure
 
-### Option 2: Run with Docker (Best for learning containers)
-
-```bash
-# Build and run all services
-docker-compose up --build
-
-# Or run in detached mode
-docker-compose up -d --build
-```
-
-Services:
-- **API**: `http://localhost:5000`
-- **Gradio UI**: `http://localhost:7860`
-
-### Option 3: Run .NET API alone
-
-```bash
-cd src/ChatApp.API
-dotnet run
-```
-
-## 📖 Learning Path
-
-### Step 1: Understand the API (Current State)
-- Read `ChatApp.API/Controllers/*.cs`
-- Read `ChatApp.Core/Models/*.cs`
-- Run `dotnet run` and test endpoints
-
-### Step 2: Try Gradio Frontend
-- Read `frontend/app.py` - it's just ~150 lines!
-- Notice how easy it is to build UI in Python
-- Try modifying colors, layout in `build_chat_interface()`
-
-### Step 3: Containerize Everything
-- Read `frontend/Dockerfile`
-- Read `dockerfiles/chatapp-api.dockerfile`
-- Understand multi-stage builds
-- Run `docker-compose up`
-
-### Step 4: Learn Kubernetes
-- Create Kubernetes manifests
-- Deploy to local cluster (Kind, Minikube)
-- Learn pods, services, deployments
-
-### Step 5: Experiment with Other Frontends
-- Try Angular (already configured)
-- Try Blazor WebAssembly (C# frontend)
-- Compare development experience
-
-## 📂 Project Structure
-
-```
+```text
 ChatApp/
-├── docker-compose.yml          # Run all services together
-├── dockerfiles/
-│   └── chatapp-api.dockerfile  # .NET API container
+├── backend/
+│   ├── ChatApp.API/            # Controllers, SignalR hub, application startup
+│   ├── ChatApp.Core/           # Models, DTOs, and interfaces
+│   └── ChatApp.Infrastructure/ # In-memory repositories and authentication
 ├── frontend/
-│   ├── app.py                  # Gradio UI (LEARNING FOCUS)
-│   ├── requirements.txt
-│   └── Dockerfile
-├── src/
-│   ├── ChatApp.API/            # Web API layer
-│   │   ├── Controllers/
-│   │   ├── Hubs/
-│   │   └── Program.cs
-│   ├── ChatApp.Core/           # Domain models & interfaces
-│   │   ├── Models/
-│   │   ├── DTOs/
-│   │   └── Interfaces/
-│   └── ChatApp.Infrastructure/ # Data access & services
-│       ├── Repositories/
-│       └── Auth/
-└── README.md
+│   ├── app.py                  # Gradio frontend
+│   ├── Dockerfile
+│   └── requirements.txt
+├── dockerfiles/
+│   └── chatapp-api.dockerfile  # Multi-stage .NET Docker build
+├── docker-compose.yml          # Local multi-container deployment
+└── .github/workflows/build.yml # Automatic Docker build validation
 ```
 
-## 🎯 What Makes This Great for Learning?
+## CI/CD
 
-| Feature | Why It's Educational |
-|---------|----------------------|
-| **Gradio** | Build UI in 50 lines vs 500+ in React |
-| **SignalR** | Real-time without WebSocket complexity |
-| **Docker** | Reproducible environments, easy sharing |
-| **Clean Architecture** | Separation of concerns, testability |
-| **Multiple Frontends** | Compare frameworks easily |
+GitHub Actions runs when code is pushed to `main` or a pull request targets
+`main`. The workflow builds both Docker images using Docker Compose. It currently
+validates the build; it does not publish images or deploy to a server yet.
 
-## 📚 Next Steps
+## Kubernetes Status
 
-1. **Add real authentication** - JWT tokens, OAuth2
-2. **Database integration** - SQL Server, PostgreSQL
-3. **Redis caching** - Improve performance
-4. **Kubernetes** - Deploy to local cluster
-5. **CI/CD** - GitHub Actions for automatic builds
-6. **Monitoring** - Add logging, metrics, tracing
+Kubernetes is **not used yet**. The application currently runs with Docker
+Compose. Kubernetes will be introduced later on a local free cluster such as
+Kind or Minikube, after the Docker deployment model is fully understood.
 
-## 💡 Gradio vs Other Frameworks
+The planned Kubernetes concepts are:
 
-| Framework | Lines for Chat UI | Learning Curve | Real-time | Best For |
-|-----------|------------------|----------------|-----------|----------|
-| **Gradio** | ~50 | ⭐ Easy | Via SignalR | Prototypes, demos |
-| **Angular** | ~500 | ⭐⭐⭐ Hard | SignalR | Enterprise apps |
-| **Blazor** | ~200 | ⭐⭐ Medium | SignalR | .NET full-stack |
-| **React** | ~300 | ⭐⭐⭐ Hard | Socket.io | Web apps |
+- Pod: runs one or more application containers
+- Deployment: manages replicated application Pods
+- Service: provides stable networking to Pods
+- ConfigMap and Secret: provide runtime configuration
 
-## 🤝 Contributing
+## Planned Learning Path
 
-This is a learning project. Feel free to:
-- Add new features
-- Write tutorials
-- Create Kubernetes manifests
-- Add tests
+1. Understand the current Docker and Compose deployment.
+2. Add CI/CD validation with GitHub Actions.
+3. Deploy the current version using a free-first approach.
+4. Add PostgreSQL and persistent volumes in version 2.
+5. Replace the Gradio frontend with Angular in a later release.
+6. Deploy the services to a local Kubernetes cluster.
 
-## 📄 License
-
-MIT - learn and share!
+This project is for learning and is not yet production-grade authentication or
+persistent storage.
