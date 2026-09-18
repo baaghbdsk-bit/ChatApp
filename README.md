@@ -37,6 +37,25 @@ To stop the application:
 docker compose down
 ```
 
+## Run the Published Images Locally
+
+This simulates a staging server. It pulls the images from Docker Hub instead of
+building from local source code:
+
+```powershell
+docker compose -f docker-compose.staging.yml pull
+docker compose -f docker-compose.staging.yml up -d
+```
+
+Open the staging-like frontend at <http://localhost:7862>. The API is available
+at <http://localhost:5002/health>.
+
+Stop it with:
+
+```powershell
+docker compose -f docker-compose.staging.yml down
+```
+
 ## Run Without Docker
 
 Start the API:
@@ -68,14 +87,15 @@ ChatApp/
 ├── dockerfiles/
 │   └── chatapp-api.dockerfile  # Multi-stage .NET Docker build
 ├── docker-compose.yml          # Local multi-container deployment
+├── docker-compose.staging.yml  # Runs images pulled from Docker Hub
 └── .github/workflows/build.yml # Automatic Docker build validation
 ```
 
 ## CI/CD
 
 GitHub Actions runs when code is pushed to `main` or a pull request targets
-`main`. The workflow builds both Docker images using Docker Compose. It currently
-validates the build; it does not publish images or deploy to a server yet.
+`main`. Pull requests build both Docker images. Pushes to `main` build and
+publish both images to Docker Hub. Deployment is still manual.
 
 ## Kubernetes Status
 

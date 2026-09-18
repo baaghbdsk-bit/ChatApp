@@ -1,0 +1,25 @@
+services:
+  chatapp-api:
+    image: grandprix1999/chatapp-api:latest
+    ports:
+      - "5002:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    networks:
+      - chatapp-network
+
+  chatapp-frontend:
+    image: grandprix1999/chatapp-frontend:latest
+    ports:
+      - "7862:7860"
+    environment:
+      API_BASE_URL: http://chatapp-api:5000
+      SIGNALR_URL: http://chatapp-api:5000/hubs/chat
+    depends_on:
+      - chatapp-api
+    networks:
+      - chatapp-network
+
+networks:
+  chatapp-network:
+    driver: bridge
