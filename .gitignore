@@ -1,0 +1,24 @@
+# .NET build output
+**/bin/
+**/obj/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE and OS files
+.vscode/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
