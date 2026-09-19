@@ -3,6 +3,8 @@
 A free learning project for understanding application architecture, Docker, CI/CD,
 and deployment by building a working chat application.
 
+Changes are developed on feature branches and merged into `main` through pull requests.
+
 ## Current Architecture
 
 ```text
