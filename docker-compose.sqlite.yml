@@ -1,0 +1,24 @@
+services:
+  chatapp-api:
+    build:
+      context: ./backend/ChatApp.API
+      dockerfile: ../../dockerfiles/chatapp-api.dockerfile
+    ports:
+      - "5002:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - CHATAPP_USE_SQLITE=true
+      - CHATAPP_DATABASE_PATH=/app/chatapp.db
+    volumes:
+      - ./backend/ChatApp.API:/app
+      - chatapp-data:/app/chatapp.db
+    networks:
+      - chatapp-network
+
+volumes:
+  chatapp-data:
+    driver: local
+
+networks:
+  chatapp-network:
+    driver: bridge
