@@ -31,11 +31,11 @@ namespace ChatApp.Infrastructure.Auth;
 /// </summary>
 public class FakeOtpAuthService : IAuthService
 {
-    private readonly InMemoryUserRepository _userRepository;
-    private readonly InMemoryMessageRepository _messageRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly IMessageRepository _messageRepository;
     private static readonly Dictionary<string, OtpRecord> _otpStore = new();
 
-    public FakeOtpAuthService(InMemoryUserRepository userRepository, InMemoryMessageRepository messageRepository)
+    public FakeOtpAuthService(IUserRepository userRepository, IMessageRepository messageRepository)
     {
         _userRepository = userRepository;
         _messageRepository = messageRepository;
