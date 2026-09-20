@@ -16,16 +16,13 @@ services:
     networks:
       - chatapp-network
 
-  # Gradio Frontend Service
+  # Angular Frontend Service
   chatapp-frontend:
     build:
-      context: ./frontend
+      context: ./frontend-angular
       dockerfile: Dockerfile
     ports:
-      - "7860:7860"
-    environment:
-      - API_BASE_URL=http://chatapp-api:5000
-      - SIGNALR_URL=http://chatapp-api:5000/hubs/chat
+      - "7860:80"
     depends_on:
       - chatapp-api
     networks:
