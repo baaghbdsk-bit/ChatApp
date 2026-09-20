@@ -59,6 +59,15 @@ if (useSQLite)
     using var scope = app.Services.CreateScope();
     var database = scope.ServiceProvider.GetRequiredService<ChatAppDbContext>();
     database.Database.EnsureCreated();
+    database.Database.ExecuteSqlRaw("""
+        CREATE TABLE IF NOT EXISTS ConversationUsers (
+            ConversationId TEXT NOT NULL,
+            UserId TEXT NOT NULL,
+            PRIMARY KEY (ConversationId, UserId),
+            FOREIGN KEY (ConversationId) REFERENCES Conversations (Id) ON DELETE CASCADE,
+            FOREIGN KEY (UserId) REFERENCES Users (Id) ON DELETE CASCADE
+        );
+        """);
 }
 
 if (app.Environment.IsDevelopment())

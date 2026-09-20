@@ -44,6 +44,14 @@ public class ChatAppDbContext : DbContext
             entity.HasIndex(u => u.PhoneNumber).IsUnique();
         });
 
+        modelBuilder.Entity<Conversation>()
+            .HasMany(c => c.Participants)
+            .WithMany()
+            .UsingEntity<Dictionary<string, object>>(
+                "ConversationUsers",
+                join => join.HasOne<User>().WithMany().HasForeignKey("UserId"),
+                join => join.HasOne<Conversation>().WithMany().HasForeignKey("ConversationId"));
+
         // Conversation entity
         modelBuilder.Entity<Conversation>(entity =>
         {

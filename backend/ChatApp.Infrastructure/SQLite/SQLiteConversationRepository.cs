@@ -15,29 +15,33 @@ public class SQLiteConversationRepository : IConversationRepository
 
     public async Task<Conversation?> GetByIdAsync(Guid id)
     {
-        return await _context.Conversations
+        var conversation = await _context.Conversations
             .Include(c => c.Participants)
-            .Include(c => c.Messages)
             .FirstOrDefaultAsync(c => c.Id == id);
+        return await IncludeMessagesAsync(conversation);
     }
 
     public async Task<List<Conversation>> GetByUserIdAsync(Guid userId)
     {
-        return await _context.Conversations
+        var conversations = await _context.Conversations
             .Include(c => c.Participants)
-            .Include(c => c.Messages)
             .Where(c => c.Participants.Any(u => u.Id == userId))
             .ToListAsync();
+        foreach (var conversation in conversations)
+        {
+            await IncludeMessagesAsync(conversation);
+        }
+        return conversations;
     }
 
     public async Task<Conversation?> GetByParticipantsAsync(Guid userId1, Guid userId2)
     {
-        return await _context.Conversations
+        var conversation = await _context.Conversations
             .Include(c => c.Participants)
-            .Include(c => c.Messages)
             .FirstOrDefaultAsync(c =>
                 c.Participants.Any(u => u.Id == userId1) &&
                 c.Participants.Any(u => u.Id == userId2));
+        return await IncludeMessagesAsync(conversation);
     }
 
     public async Task<Conversation> CreateAsync(Conversation conversation)
@@ -46,6 +50,19 @@ public class SQLiteConversationRepository : IConversationRepository
         conversation.CreatedAt = DateTime.UtcNow;
         _context.Conversations.Add(conversation);
         await _context.SaveChangesAsync();
+        return conversation;
+    }
+
+    private async Task<Conversation?> IncludeMessagesAsync(Conversation? conversation)
+    {
+        if (conversation != null)
+        {
+            conversation.Messages = await _context.Messages
+                .Where(message => message.ConversationId == conversation.Id)
+                .OrderBy(message => message.SentAt)
+                .ToListAsync();
+        }
+
         return conversation;
     }
 }
