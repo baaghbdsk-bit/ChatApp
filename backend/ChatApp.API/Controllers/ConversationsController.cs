@@ -1,7 +1,9 @@
 using ChatApp.Core.DTOs;
 using ChatApp.Core.Interfaces;
 using ChatApp.Core.Models;
+using ChatApp.API.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ChatApp.API.Controllers;
 
@@ -16,15 +18,18 @@ public class ConversationsController : ControllerBase
     private readonly IConversationRepository _conversationRepo;
     private readonly IMessageRepository _messageRepo;
     private readonly IUserRepository _userRepository;
+    private readonly IHubContext<ChatHub> _chatHub;
 
     public ConversationsController(
         IConversationRepository conversationRepo, 
         IMessageRepository messageRepo,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IHubContext<ChatHub> chatHub)
     {
         _conversationRepo = conversationRepo;
         _messageRepo = messageRepo;
         _userRepository = userRepository;
+        _chatHub = chatHub;
     }
 
     /// <summary>
@@ -103,6 +108,9 @@ public class ConversationsController : ControllerBase
         };
         
         var created = await _conversationRepo.CreateAsync(newConv);
+        await _chatHub.Clients
+            .Group(ChatHub.GetUserGroupName(targetUser.Id))
+            .SendAsync("ConversationCreated", MapToConversationDto(created, targetUser.Id));
         return Ok(MapToConversationDto(created, userId));
     }
 
@@ -141,5 +149,11 @@ public class ConversationsController : ControllerBase
         );
     }
 
-    private Guid GetUserIdFromRequest() => Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private Guid GetUserIdFromRequest()
+    {
+        return Request.Headers.TryGetValue("X-User-Id", out var rawUserId) &&
+               Guid.TryParse(rawUserId, out var userId)
+            ? userId
+            : Guid.Empty;
+    }
 }

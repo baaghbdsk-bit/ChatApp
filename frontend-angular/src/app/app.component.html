@@ -1,0 +1,44 @@
+@if (!isAuthenticated) {
+  <main class="auth-shell">
+    <section class="auth-art">
+      <div class="eyebrow"><span class="signal-dot"></span> PRIVATE MESSAGING</div>
+      <h1>Conversations that feel close, even from far away.</h1>
+      <p>ChatApp keeps your people, messages, and moments in one calm place.</p>
+      <div class="orbit-card"><span class="orbit-icon">*</span><span>Simple by design.<br><strong>Ready when you are.</strong></span></div>
+    </section>
+    <section class="auth-panel">
+      <div class="brand-mark">C<span>/</span></div>
+      <div class="panel-copy"><p class="kicker">WELCOME TO CHATAPP</p><h2>Sign in to your space.</h2><p>Use your phone number to continue. This demo sends an OTP to the API.</p></div>
+      <label for="phone">Phone number</label>
+      <input id="phone" [(ngModel)]="phoneNumber" placeholder="+1 555 010 2040" autocomplete="tel" />
+      <button class="primary-button" (click)="sendOtp()" [disabled]="isSendingOtp">{{ isSendingOtp ? 'Sending...' : 'Send OTP' }} <span>-></span></button>
+      <div class="otp-row"><div><label for="otp">Verification code</label><input id="otp" [(ngModel)]="otpCode" placeholder="DEMO" autocomplete="one-time-code" /></div><button class="verify-button" (click)="verifyOtp()" [disabled]="isVerifying || !otpCode">{{ isVerifying ? '...' : 'Verify' }}</button></div>
+      @if (statusMessage) { <p class="status success">{{ statusMessage }}</p> }
+      @if (errorMessage) { <p class="status error">{{ errorMessage }}</p> }
+      <p class="legal">By continuing, you agree to our terms and privacy policy.</p>
+    </section>
+  </main>
+} @else {
+  <main class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-top"><div class="brand-lockup"><div class="brand-mark small">C<span>/</span></div><strong>ChatApp</strong></div><button class="icon-button" title="Log out" (click)="logout()">&#8617;</button></div>
+      <div class="profile-row"><div class="avatar user-avatar">{{ currentUser?.displayName?.charAt(0) }}</div><div><strong>{{ currentUser?.displayName }}</strong><span>Available</span></div><span class="online-dot"></span></div>
+      <div class="section-heading"><span>MESSAGES</span><button class="icon-button plus" title="New conversation">+</button></div>
+      <div class="new-contact"><input [(ngModel)]="contactPhone" placeholder="Phone number" (keyup.enter)="createConversation()" /><button (click)="createConversation()" [disabled]="isCreatingConversation" title="Start conversation">{{ isCreatingConversation ? '...' : '->' }}</button></div>
+      <div class="conversation-list">
+        @if (isLoadingConversations) { <p class="empty-state">Loading conversations...</p> }
+        @else if (conversations.length === 0) { <p class="empty-state">No conversations yet.<br>Start one above.</p> }
+        @for (conversation of conversations; track conversation.id) { <button class="conversation-item" [class.active]="selectedConversation?.id === conversation.id" (click)="selectConversation(conversation)"><div class="avatar">{{ conversation.otherParticipant.displayName.charAt(0) }}</div><div class="conversation-meta"><strong>{{ conversation.otherParticipant.displayName }}</strong><span>{{ conversation.lastMessage?.content || 'New conversation' }}</span></div>@if (conversation.unreadCount) { <b class="unread">{{ conversation.unreadCount }}</b> }</button> }
+      </div>
+      <div class="sidebar-footer"><span class="status-light"></span> {{ isRealtimeConnected ? 'Live chat connected' : 'Connecting chat...' }} <small>SQLite</small></div>
+    </aside>
+    <section class="chat-panel">
+      @if (selectedConversation) {
+        <header class="chat-header"><div class="chat-person"><div class="avatar large">{{ selectedConversation.otherParticipant.displayName.charAt(0) }}</div><div><h2>{{ selectedConversation.otherParticipant.displayName }}</h2><span><i></i> Active now</span></div></div><div class="header-actions"><button class="icon-button" title="Search">?</button><button class="icon-button" title="More options">...</button></div></header>
+        <div class="message-canvas"><div class="date-rule"><span>Today</span></div>@if (messages.length === 0) { <div class="empty-chat"><div class="empty-chat-icon">*</div><h3>Start the conversation</h3><p>Send the first message to {{ selectedConversation.otherParticipant.displayName }}.</p></div> } @for (message of messages; track message.id) { <div class="message-row" [class.mine]="message.senderId === currentUser?.id"><div class="message-bubble">{{ message.content }}<time>{{ message.sentAt | date:'shortTime' }}</time></div></div> }</div>
+        @if (errorMessage) { <p class="status error chat-error">{{ errorMessage }}</p> }
+        <form class="composer" (submit)="$event.preventDefault(); sendMessage()"><button type="button" class="icon-button" title="Attach file">+</button><input [(ngModel)]="messageDraft" name="message" placeholder="Write a message..." /><button type="submit" class="send-button" title="Send message">^</button></form>
+      } @else { <div class="empty-chat landing"><div class="empty-chat-icon">*</div><h2>Your conversations live here.</h2><p>Choose a chat from the left or start a new one.</p></div> }
+    </section>
+  </main>
+}
