@@ -35,7 +35,7 @@ interface Conversation {
 })
 export class AppComponent implements OnDestroy {
   private readonly http = inject(HttpClient);
-  private readonly apiBaseUrl = 'http://localhost:5289';
+  private readonly apiBaseUrl = window.location.port === '4200' ? 'http://localhost:5289' : '';
 
   phoneNumber = '';
   otpCode = '';
